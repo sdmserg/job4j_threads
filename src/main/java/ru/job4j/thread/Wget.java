@@ -22,33 +22,37 @@ public class Wget implements Runnable {
         var file = new File("tmp.xml");
         try (var input = new URL(url).openStream();
              var output = new FileOutputStream(file)) {
-            System.out.println("Open connection: " + (System.currentTimeMillis() - startAt) + " ms.");
-            var dataBuffer = new byte[512];
+            System.out.println("Open connection: " + (System.currentTimeMillis() - startAt) + " ms");
+            var dataBuffer = new byte[100];
             int bytesRead;
+            int bytesTotal = 0;
             while ((bytesRead = input.read(dataBuffer, 0, dataBuffer.length)) != -1) {
-                var downloadStart = System.nanoTime();
                 output.write(dataBuffer, 0, bytesRead);
-                var downloadTime = System.nanoTime() - downloadStart;
-                System.out.println("Read " + bytesRead + " bytes : " + downloadTime + " ns.");
-                var currentSpeedBytesMs = bytesRead * 1000000L / downloadTime;
-                System.out.println("Expected speed: " + speed + " bytes/ms. Current speed: " + currentSpeedBytesMs + " bytes/ms");
-                if (currentSpeedBytesMs > speed) {
-                    long sleepTime = currentSpeedBytesMs  / speed;
-                    System.out.println("Sleep: " + sleepTime + " ms.");
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                        break;
+                var downloadAt = System.currentTimeMillis();
+                bytesTotal += bytesRead;
+                if (bytesTotal >=  speed) {
+                    var downloadTime = downloadAt - startAt;
+                    System.out.println("Download: " +  bytesTotal + " >= " + speed + " bytes. Download time: " + downloadTime + " ms");
+                    if (downloadTime < 1000) {
+                        long sleepTime = 1000 - downloadTime;
+                        System.out.println("Sleep time: " + sleepTime + " ms");
+                        try {
+                            Thread.sleep(sleepTime);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
                     }
+                    bytesTotal = 0;
+                    startAt = System.currentTimeMillis();
                 }
             }
-            System.out.println(Files.size(file.toPath()) + " bytes");
-        } catch (IOException ex) {
+            System.out.println("Download complete: " + Files.size(file.toPath()) + " bytes");
+        }   catch (IOException ex) {
             ex.printStackTrace();
         }
     }
-    
+
     public static void main(String[] args) throws InterruptedException {
         validateParams(args);
         String url = args[0];
@@ -60,25 +64,25 @@ public class Wget implements Runnable {
 
     private static void validateParams(String[] args) {
           if (args.length != 2) {
-              throw new IllegalArgumentException (
+              throw new IllegalArgumentException(
                       "Invalid number of arguments. Expected 2 parameters: URL and speed (bytes/ms)."
               );
           }
           String url = args[0];
           if (url.isBlank()) {
-              throw new IllegalArgumentException (
+              throw new IllegalArgumentException(
                       "Invalid first argument: " + args[0] + ". URL cannot be empty."
               );
           }
           if (!url.startsWith("http://") && !url.startsWith("https://")) {
-              throw new IllegalArgumentException (
+              throw new IllegalArgumentException(
                       "Invalid first argument: " + args[0] + ". URL must start with http/https."
               );
           }
           try {
               new URL(url).toURI();
           } catch (Exception ex) {
-              throw new IllegalArgumentException (
+              throw new IllegalArgumentException(
                       "Invalid first argument: " + url + ". Invalid URL format."
               );
           }
