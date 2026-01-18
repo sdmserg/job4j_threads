@@ -42,4 +42,8 @@ public class SimpleBlockingQueue<T> {
             return result;
         }
     }
+
+    public synchronized boolean isEmpty() {
+        return count == 0;
+    }
 }
