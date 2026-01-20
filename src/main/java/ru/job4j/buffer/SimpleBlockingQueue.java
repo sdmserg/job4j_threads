@@ -14,29 +14,25 @@ public class SimpleBlockingQueue<T> {
 
     private final int total;
 
-    private int count = 0;
-
     public SimpleBlockingQueue(final int total) {
         this.total = total;
     }
 
     public void offer(T value) throws InterruptedException {
         synchronized (this) {
-            while (count == total) {
+            while (queue.size() == total) {
                 this.wait();
             }
             queue.offer(value);
-            count++;
             this.notify();
         }
     }
 
     public T poll() throws InterruptedException {
         synchronized (this) {
-            while (count == 0) {
+            while (queue.isEmpty()) {
                 this.wait();
             }
-            count--;
             T result = queue.poll();
             this.notify();
             return result;
@@ -44,6 +40,6 @@ public class SimpleBlockingQueue<T> {
     }
 
     public synchronized boolean isEmpty() {
-        return count == 0;
+        return queue.isEmpty();
     }
 }
