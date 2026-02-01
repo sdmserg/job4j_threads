@@ -24,7 +24,7 @@ public class SimpleBlockingQueue<T> {
                 this.wait();
             }
             queue.offer(value);
-            this.notify();
+            this.notifyAll();
         }
     }
 
@@ -34,7 +34,7 @@ public class SimpleBlockingQueue<T> {
                 this.wait();
             }
             T result = queue.poll();
-            this.notify();
+            this.notifyAll();
             return result;
         }
     }
