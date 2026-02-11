@@ -20,7 +20,7 @@ public class ParallelSearchIndex<T> extends RecursiveTask<Optional<Integer>> {
     @Override
     protected Optional<Integer> compute() {
         if ((to - from) <= 10) {
-            return linearSearch(array, from, to, value);
+            return linearSearch();
         }
         int middle = (from + to) / 2;
         var leftArray = new ParallelSearchIndex<>(array, from, middle, value);
@@ -32,7 +32,7 @@ public class ParallelSearchIndex<T> extends RecursiveTask<Optional<Integer>> {
         return leftIndex.or(() -> rightIndex);
      }
 
-    private Optional<Integer> linearSearch(T[] array, int from, int to, T value) {
+    private Optional<Integer> linearSearch() {
         for (int i = from; i <= to; i++) {
             if (Objects.equals(array[i], value)) {
                 return Optional.of(i);
