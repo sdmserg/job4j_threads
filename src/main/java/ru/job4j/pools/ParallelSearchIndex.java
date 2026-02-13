@@ -1,5 +1,6 @@
 package ru.job4j.pools;
 
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,5 +40,10 @@ public class ParallelSearchIndex<T> extends RecursiveTask<Optional<Integer>> {
             }
         }
         return Optional.empty();
+    }
+
+    public static <T> Optional<Integer> parallelSearch(T[] array, T value) {
+        ForkJoinPool forkJoinPool = new ForkJoinPool();
+        return forkJoinPool.invoke(new ParallelSearchIndex<>(array, 0, array.length - 1, value));
     }
 }
